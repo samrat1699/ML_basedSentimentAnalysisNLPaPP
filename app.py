@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pickle
 import string
@@ -67,8 +66,8 @@ def transform_text(text):
     return " ".join(y)
 
 # Load the trained vectorizer and model
-tfidf = pickle.load(open('models\\vectorizer.pkl', 'rb'))
-model = pickle.load(open('models\\model.pkl', 'rb'))
+tfidf = pickle.load(open('vectorizer.pkl', 'rb'))
+model = pickle.load(open('model.pkl', 'rb'))
 
 # Function to predict sentiment
 def predict_sentiment(text):
@@ -81,12 +80,14 @@ def predict_sentiment(text):
     # Predict sentiment using the model
     prediction = model.predict(vectorized_text)
     
-    return prediction[0]
+    # Get probability of each class
+    probabilities = model.predict_proba(vectorized_text)
+    
+    return prediction[0], probabilities
 
 # Streamlit app
 def main():
     st.title("Sentiment Analysis App")
-    # st.write("Enter a sentence to predict its sentiment:")
     
     # User input
     user_input = st.text_area("Enter a sentence:")
@@ -94,13 +95,17 @@ def main():
     # Predict sentiment when the user clicks the button
     if st.button("Predict"):
         # Perform prediction
-        prediction = predict_sentiment(user_input)
+        prediction, probabilities = predict_sentiment(user_input)
         
-        # Display prediction
-        if prediction == 1:
-            st.write("Sentiment: Positive")
-        else:
-            st.write("Sentiment: Negative")
+        # # Display prediction
+        # if prediction == 1:
+        #     st.write("Sentiment: Positive")
+        # else:
+        #     st.write("Sentiment: Negative")
+        
+        # Display probabilities
+        st.write(f"Probability of Positive Sentiment: {probabilities[0][1] * 100:.2f}%")
+        st.write(f"Probability of Negative Sentiment: {probabilities[0][0] * 100:.2f}%")
 
 if __name__ == '__main__':
     main()
